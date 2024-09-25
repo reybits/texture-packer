@@ -27,7 +27,7 @@ std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sCo
             return SimplePacker::Compare(a, b);
         });
 
-        return std::make_unique<SimplePacker>(static_cast<uint32_t>(imageList.size()), config);
+        return std::make_unique<SimplePacker>(config);
     }
     else if (config.algorithm != sConfig::Algorithm::KDTree)
     {

@@ -11,10 +11,9 @@
 #include "Image.h"
 #include "Types/Types.h"
 
-SimplePacker::SimplePacker(uint32_t count, const sConfig& config)
+SimplePacker::SimplePacker(const sConfig& config)
     : AtlasPacker(config)
 {
-    m_images.reserve(count);
 }
 
 SimplePacker::~SimplePacker()
