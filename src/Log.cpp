@@ -19,6 +19,6 @@ void cLog::Write(Severity severity, const std::string& msg)
         "(DD) ",
     };
 
-    auto idx = static_cast<uint32_t>(severity);
+    auto idx = static_cast<size_t>(severity);
     ::printf("%s%s\n", SeverityNames[idx], msg.c_str());
 }
