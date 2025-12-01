@@ -27,6 +27,12 @@ struct sOffset
     uint32_t y = 0u;
 };
 
+struct sHotspot
+{
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
 struct sRect
 {
     uint32_t width() const

@@ -16,7 +16,7 @@
 #include "Types/Types.h"
 
 #include <algorithm>
-#include <sstream>
+#include <fmt/core.h>
 
 std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sConfig& config)
 {
@@ -196,7 +196,7 @@ void AtlasPacker::buildAtlas()
 
 bool AtlasPacker::generateResFile(cFile& file, const std::string& atlasName)
 {
-    std::stringstream out;
+    std::string out;
 
     const uint32_t rectsCount = getRectsCount();
     std::vector<uint32_t> indexes(rectsCount);
@@ -230,18 +230,18 @@ bool AtlasPacker::generateResFile(cFile& file, const std::string& atlasName)
 
         auto& originalSize = image->getOriginalSize();
         auto& offset = image->getOffset();
-        sOffset hotspot{
-            static_cast<uint32_t>(originalSize.width * 0.5f - offset.x),
-            static_cast<uint32_t>(originalSize.height * 0.5f - offset.y)
+        sHotspot hotspot{
+            originalSize.width * 0.5f - offset.x,
+            originalSize.height * 0.5f - offset.y
         };
 
-        out << "    ";
-        out << "<" << spriteId << " texture=\"" << atlasName << "\" ";
-        out << "rect=\"" << pos.x << " " << pos.y << " " << size.width << " " << size.height << "\" ";
-        out << "hotspot=\"" << hotspot.x << " " << hotspot.y << "\" />\n";
+        out += fmt::format("    <{} texture=\"{}\" rect=\"{} {} {} {}\" hotspot=\"{} {}\" />\n",
+                           spriteId, atlasName,
+                           pos.x, pos.y, size.width, size.height,
+                           hotspot.x, hotspot.y);
     }
 
-    file.write((void*)out.str().c_str(), out.str().length());
+    file.write((void*)out.c_str(), out.length());
 
     return true;
 }
