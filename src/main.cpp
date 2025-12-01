@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
 {
     sConfig config;
 
-    cLog::Info("Texture Packer v1.3.2.");
-    cLog::Info("Copyright (c) 2017-2024 Andrey A. Ugolnik.");
+    cLog::Info("Texture Packer v1.3.3.");
+    cLog::Info("Copyright (c) 2017-2025 Andrey A. Ugolnik.");
     cLog::Info("");
     if (argc < 3)
     {
