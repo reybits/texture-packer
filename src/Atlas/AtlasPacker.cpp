@@ -231,8 +231,12 @@ bool AtlasPacker::generateResFile(cFile& file, const std::string& atlasName)
         auto& originalSize = image->getOriginalSize();
         auto& offset = image->getOffset();
         sHotspot hotspot{
-            originalSize.width * 0.5f - offset.x,
-            originalSize.height * 0.5f - offset.y
+            m_config.keepFloat
+                ? originalSize.width * 0.5f - offset.x
+                : static_cast<uint32_t>(originalSize.width * 0.5f - offset.x),
+            m_config.keepFloat
+                ? originalSize.height * 0.5f - offset.y
+                : static_cast<uint32_t>(originalSize.height * 0.5f - offset.y)
         };
 
         out += fmt::format("    <{} texture=\"{}\" rect=\"{} {} {} {}\" hotspot=\"{} {}\" />\n",

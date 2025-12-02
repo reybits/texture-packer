@@ -7,10 +7,18 @@
 \**********************************************/
 
 #include "Utils.h"
+#include "Log.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <sys/time.h>
+
+void deprecatedOption(const char* oldArg, const char* newArg, const char* removeDate)
+{
+    cLog::Warning("Option {} is deprecated and will be removed after {}. Use {} instead.",
+                  oldArg, removeDate, newArg);
+}
 
 uint64_t getCurrentTime()
 {
@@ -57,4 +65,26 @@ const char* formatNum(int num, char delimiter)
 const char* isEnabled(bool enabled)
 {
     return enabled ? "enabled" : "disabled";
+}
+
+bool shiftArg(int argc, char* argv[], int& idx, const char*& value)
+{
+    if (idx + 1 < argc)
+    {
+        value = argv[++idx];
+        return true;
+    }
+
+    return false;
+}
+
+bool shiftArg(int argc, char* argv[], int& idx, uint32_t& value)
+{
+    if (idx + 1 < argc)
+    {
+        value = static_cast<uint32_t>(::atoi(argv[++idx]));
+        return true;
+    }
+
+    return false;
 }

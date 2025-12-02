@@ -17,6 +17,7 @@ struct sConfig
     bool pot = false;
     bool trim = false;
     bool multi = false;
+    bool keepFloat = false;
     bool overlay = false;
     bool alowDupes = false;
     bool slowMethod = false;
