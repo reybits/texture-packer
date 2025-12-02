@@ -38,5 +38,5 @@ private:
     cKDNode* m_childA = nullptr; // left or top
     cKDNode* m_childB = nullptr; // right or bottom
 
-    sRect m_rect;
+    sRect m_rect{ 0u, 0u, 0u, 0u };
 };

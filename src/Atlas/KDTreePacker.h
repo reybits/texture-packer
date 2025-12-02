@@ -17,8 +17,8 @@ class cKDNode;
 class KDTreePacker final : public AtlasPacker
 {
 public:
-    KDTreePacker(const sConfig& config);
-    ~KDTreePacker();
+    explicit KDTreePacker(const sConfig& config);
+    ~KDTreePacker() override;
 
     static bool Compare(const cImage* a, const cImage* b);
 

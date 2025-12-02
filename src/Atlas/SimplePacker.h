@@ -17,7 +17,7 @@ class SimplePacker final : public AtlasPacker
 {
 public:
     SimplePacker(uint32_t count, const sConfig& config);
-    ~SimplePacker();
+    ~SimplePacker() override;
 
     static bool Compare(const cImage* a, const cImage* b);
 

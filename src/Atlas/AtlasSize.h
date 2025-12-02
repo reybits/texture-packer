@@ -15,7 +15,7 @@ struct sConfig;
 class cAtlasSize final
 {
 public:
-    cAtlasSize(const sConfig& config);
+    explicit cAtlasSize(const sConfig& config);
 
     void addRect(const sSize& size);
     uint32_t getArea() const;

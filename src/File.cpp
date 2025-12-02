@@ -59,7 +59,7 @@ uint32_t cFile::read(void* ptr, uint32_t size) const
     return 0u;
 }
 
-uint32_t cFile::write(void* ptr, uint32_t size) const
+uint32_t cFile::write(const void* ptr, uint32_t size) const
 {
     if (m_file != nullptr)
     {

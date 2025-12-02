@@ -24,7 +24,7 @@ public:
 
     uint32_t seek(uint32_t offset, int whence) const;
     uint32_t read(void* ptr, uint32_t size) const;
-    uint32_t write(void* ptr, uint32_t size) const;
+    uint32_t write(const void* ptr, uint32_t size) const;
 
     long getSize() const
     {
