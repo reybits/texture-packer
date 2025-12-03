@@ -35,7 +35,7 @@ void sConfig::dump() const
     // Features
     cLog::Info("Keep hotspot float: {}", toString(keepFloat));
     cLog::Info("Power of Two:       {}", toString(pot));
-    // cLog::Info("Multi-atlas:        {}", toString(multi));
+    // cLog::Info("Multi-atlas:        {}", toString(enableMultiAtlas));
     cLog::Info("Trim sprites:       {}", toString(trimSprite));
     cLog::Info("Drop extension:     {}", toString(dropExt));
     cLog::Info("Allow duplicates:   {}", toString(alowDupes));

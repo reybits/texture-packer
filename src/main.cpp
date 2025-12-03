@@ -124,9 +124,9 @@ int main(int argc, char* argv[])
         {
             config.pot = true;
         }
-        else if (isOption(arg, "--multi"))
+        else if (isOption(arg, "--mulit-atlas"))
         {
-            config.multi = true;
+            config.enableMultiAtlas = true;
         }
         else if (isOption(arg, "-trim")) // FIXME: deprecated, remove after 2025.02.30
         {
@@ -255,20 +255,20 @@ void showHelp(const char* name, const sConfig& config)
     cLog::Info("  {} INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH", name);
     cLog::Info("");
     cLog::Info("  INPUT_IMAGE        Input image file or directory (space-separated)");
-    cLog::Info("  --border=SIZE      Add border around sprites (default: {} px)", config.border);
-    cLog::Info("  --padding=SIZE     Add padding between sprites (default: {} px)", config.padding);
-    cLog::Info("  --atlas=PATH       Output atlas file name (default: PNG)");
-    cLog::Info("  --xml=PATH         The output file path for the atlas description in XML format");
-    cLog::Info("  --prefix=PREFIX    Add prefix to texture path");
     cLog::Info("  --algorithm=NAME   Packing algorithm (kdtree or classic, default: {})", sConfig::ToName(config.algorithm));
-    cLog::Info("  --drop-ext         Remove file extension from sprite ID (default: {})", toString(config.dropExt));
     cLog::Info("  --allow-dupes      Allow duplicate sprites (default: {})", toString(config.alowDupes));
-    cLog::Info("  --keep-float       Preserve float hotspot coordinates (default: {})", toString(config.keepFloat));
     cLog::Info("  --atlas-size=SIZE  Maximum atlas size (default: {} px)", config.maxAtlasSize);
-    // cLog::Info("  --multi            Enable multi-atlas output (default: {})", toString(config.multi));
+    cLog::Info("  --atlas=PATH       Output atlas file name (default: PNG)");
+    cLog::Info("  --border=SIZE      Add border around sprites (default: {} px)", config.border);
+    cLog::Info("  --drop-ext         Remove file extension from sprite ID (default: {})", toString(config.dropExt));
+    cLog::Info("  --keep-float       Preserve float hotspot coordinates (default: {})", toString(config.keepFloat));
+    cLog::Info("  --mulit-atlas      Enable multi-atlas output (default: {})", toString(config.enableMultiAtlas));
     cLog::Info("  --no-recurse       Do not search subdirectories");
     cLog::Info("  --overlay          Overlay sprites (default: {})", toString(config.overlay));
+    cLog::Info("  --padding=SIZE     Add padding between sprites (default: {} px)", config.padding);
     cLog::Info("  --pot              Make atlas dimensions power of two (default: {})", toString(config.pot));
-    cLog::Info("  --trim-sprite      Trim transparent borders from sprites (default: {})", toString(config.trimSprite));
+    cLog::Info("  --prefix=PREFIX    Add prefix to texture path");
     cLog::Info("  --trim-id=COUNT    Remove COUNT characters from the start of sprite IDs (default: 0)");
+    cLog::Info("  --trim-sprite      Trim transparent borders from sprites (default: {})", toString(config.trimSprite));
+    cLog::Info("  --xml=PATH         The output file path for the atlas description in XML format");
 }

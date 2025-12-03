@@ -16,7 +16,7 @@ struct sConfig
     uint32_t padding = 1;
     bool pot = false;
     bool trimSprite = false;
-    bool multi = false;
+    bool enableMultiAtlas = false;
     bool keepFloat = false;
     bool overlay = false;
     bool alowDupes = false;

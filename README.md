@@ -19,21 +19,22 @@ The Texture Packer tool efficiently combines multiple images into a single optim
 ```sh
 texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH
   INPUT_IMAGE        Input image file or directory (space-separated)
-  --border=SIZE      Add border around sprites (default: 0 px)
-  --padding=SIZE     Add padding between sprites (default: 1 px)
-  --atlas=PATH       Output atlas file name (default: PNG)
-  --xml=PATH         The output file path for the atlas description in XML format
-  --prefix=PREFIX    Add prefix to texture path
   --algorithm=NAME   Packing algorithm (kdtree or classic, default: kdtree)
-  --drop-ext         Remove file extension from sprite ID (default: false)
   --allow-dupes      Allow duplicate sprites (default: false)
-  --keep-float       Preserve float hotspot coordinates (default: false)
   --atlas-size=SIZE  Maximum atlas size (default: 2048 px)
+  --atlas=PATH       Output atlas file name (default: PNG)
+  --border=SIZE      Add border around sprites (default: 0 px)
+  --drop-ext         Remove file extension from sprite ID (default: false)
+  --keep-float       Preserve float hotspot coordinates (default: false)
+  --mulit-atlas      Enable multi-atlas output (default: false)
   --no-recurse       Do not search subdirectories
   --overlay          Overlay sprites (default: false)
+  --padding=SIZE     Add padding between sprites (default: 1 px)
   --pot              Make atlas dimensions power of two (default: false)
-  --trim-sprite      Trim transparent borders from sprites (default: false)
+  --prefix=PREFIX    Add prefix to texture path
   --trim-id=COUNT    Remove COUNT characters from the start of sprite IDs (default: 0)
+  --trim-sprite      Trim transparent borders from sprites (default: false)
+  --xml=PATH         The output file path for the atlas description in XML format
 ```
 
 ## Download and build
