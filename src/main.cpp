@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     sConfig config;
 
-    cLog::Info("Texture Packer v1.3.4.");
+    cLog::Info("Texture Packer v1.3.5.");
     cLog::Info("Copyright (c) 2017-2025 Andrey A. Ugolnik.");
     cLog::Info("");
     if (argc < 3)
@@ -44,124 +44,148 @@ int main(int argc, char* argv[])
     {
         const char* arg = argv[i];
 
-        if (::strcmp(arg, "-o") == 0)
+        if (arg[0] != '-')
         {
+            fileList.addPath(trimCount, arg, recurse);
+        }
+        else if (isOption(arg, "-o")) // FIXME: deprecated, remove after 2025.02.30
+        {
+            deprecatedOption(arg, "--atlas=PATH", "2025.02.30");
             shiftArg(argc, argv, i, outputAtlasName);
         }
-        else if (::strcmp(arg, "-res") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "--atlas="))
         {
-            deprecatedOption(arg, "--res", "2025.02.30");
+            outputAtlasName = arg + ::strlen("--atlas=");
+        }
+        else if (isOption(arg, "-res")) // FIXME: deprecated, remove after 2025.02.30
+        {
+            deprecatedOption(arg, "--xml=PATH", "2025.02.30");
             shiftArg(argc, argv, i, outputResName);
         }
-        else if (::strcmp(arg, "--res") == 0)
+        else if (isOption(arg, "--xml="))
         {
-            shiftArg(argc, argv, i, outputResName);
+            outputResName = arg + ::strlen("--xml=");
         }
-        else if (::strcmp(arg, "-prefix") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-prefix")) // FIXME: deprecated, remove after 2025.02.30
         {
-            deprecatedOption(arg, "--prefix", "2025.02.30");
+            deprecatedOption(arg, "--prefix=NAME", "2025.02.30");
             shiftArg(argc, argv, i, resPathPrefix);
         }
-        else if (::strcmp(arg, "--prefix") == 0)
+        else if (isOption(arg, "--prefix="))
         {
-            shiftArg(argc, argv, i, resPathPrefix);
+            resPathPrefix = arg + ::strlen("--prefix=");
         }
-        else if (::strcmp(arg, "-b") == 0)
+        else if (isOption(arg, "-b")) // FIXME: deprecated, remove after 2025.02.30
         {
+            deprecatedOption(arg, "--border=SIZE", "2025.02.30");
             shiftArg(argc, argv, i, config.border);
         }
-        else if (::strcmp(arg, "-p") == 0)
+        else if (isOption(arg, "--border="))
         {
+            auto value = arg + ::strlen("--border=");
+            config.border = static_cast<uint32_t>(::atoi(value));
+        }
+        else if (isOption(arg, "-p")) // FIXME: deprecated, remove after 2025.02.30
+        {
+            deprecatedOption(arg, "--padding=SIZE", "2025.02.30");
             shiftArg(argc, argv, i, config.padding);
         }
-        else if (::strcmp(arg, "-max") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "--padding="))
         {
-            deprecatedOption(arg, "--max", "2025.02.30");
-            shiftArg(argc, argv, i, config.maxTextureSize);
+            auto value = arg + ::strlen("--padding=");
+            config.padding = static_cast<uint32_t>(::atoi(value));
         }
-        else if (::strcmp(arg, "--max") == 0)
+        else if (isOption(arg, "-max")) // FIXME: deprecated, remove after 2025.02.30
         {
-            shiftArg(argc, argv, i, config.maxTextureSize);
+            deprecatedOption(arg, "--atlas-size=SIZE", "2025.02.30");
+            shiftArg(argc, argv, i, config.maxAtlasSize);
         }
-        else if (::strcmp(arg, "-tl") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "--atlas-size="))
         {
-            deprecatedOption(arg, "--trim-name", "2025.02.30");
+            auto value = arg + ::strlen("--atlas-size=");
+            config.maxAtlasSize = static_cast<uint32_t>(::atoi(value));
+        }
+        else if (isOption(arg, "-tl")) // FIXME: deprecated, remove after 2025.02.30
+        {
+            deprecatedOption(arg, "--trim-id=COUNT", "2025.02.30");
             shiftArg(argc, argv, i, trimCount);
         }
-        else if (::strcmp(arg, "--trim-name") == 0)
+        else if (isOption(arg, "--trim-id="))
         {
-            shiftArg(argc, argv, i, trimCount);
+            auto value = arg + ::strlen("--trim-id=");
+            trimCount = static_cast<uint32_t>(::atoi(value));
         }
-        else if (::strcmp(arg, "-pot") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-pot")) // FIXME: deprecated, remove after 2025.02.30
         {
             deprecatedOption(arg, "--pot", "2025.02.30");
             config.pot = true;
         }
-        else if (::strcmp(arg, "--pot") == 0)
+        else if (isOption(arg, "--pot"))
         {
             config.pot = true;
         }
-        else if (::strcmp(arg, "--multi") == 0)
+        else if (isOption(arg, "--multi"))
         {
             config.multi = true;
         }
-        else if (::strcmp(arg, "-trim") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-trim")) // FIXME: deprecated, remove after 2025.02.30
         {
-            deprecatedOption(arg, "--trim", "2025.02.30");
-            config.trim = true;
+            deprecatedOption(arg, "--trim-sprite", "2025.02.30");
+            config.trimSprite = true;
         }
-        else if (::strcmp(arg, "--trim") == 0)
+        else if (isOption(arg, "--trim-sprite"))
         {
-            config.trim = true;
+            config.trimSprite = true;
         }
-        else if (::strcmp(arg, "-dupes") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-dupes")) // FIXME: deprecated, remove after 2025.02.30
         {
-            deprecatedOption(arg, "--dupes", "2025.02.30");
+            deprecatedOption(arg, "--allow-dupes", "2025.02.30");
             config.alowDupes = true;
         }
-        else if (::strcmp(arg, "--dupes") == 0)
+        else if (isOption(arg, "--allow-dupes"))
         {
             config.alowDupes = true;
         }
-        else if (::strcmp(arg, "-slow") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-slow")) // FIXME: deprecated, remove after 2025.02.30
         {
-            deprecatedOption(arg, "--classic-packing", "2025.02.30");
-            config.slowMethod = true;
+            deprecatedOption(arg, "--algorithm=classic", "2025.02.30");
+            config.algorithm = sConfig::Algorithm::Classic;
         }
-        else if (::strcmp(arg, "--classic-packing") == 0)
+        else if (isOption(arg, "--algorithm="))
         {
-            config.slowMethod = true;
+            auto value = arg + ::strlen("--algorithm=");
+            config.algorithm = sConfig::ToAlgorithm(value);
         }
-        else if (::strcmp(arg, "-dropext") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-dropext")) // FIXME: deprecated, remove after 2025.02.30
         {
             deprecatedOption(arg, "--drop-ext", "2025.02.30");
             config.dropExt = true;
         }
-        else if (::strcmp(arg, "--drop-ext") == 0)
+        else if (isOption(arg, "--drop-ext"))
         {
             config.dropExt = true;
         }
-        else if (::strcmp(arg, "-overlay") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "-overlay")) // FIXME: deprecated, remove after 2025.02.30
         {
             deprecatedOption(arg, "--overlay", "2025.02.30");
             config.overlay = true;
         }
-        else if (::strcmp(arg, "--overlay") == 0)
+        else if (isOption(arg, "--overlay"))
         {
             config.overlay = true;
         }
-        else if (::strcmp(arg, "-nr") == 0) // FIXME: deprecated, remove after 2025.02.30
+        else if (isOption(arg, "--no-recurse"))
+        {
+            recurse = false;
+        }
+        else if (isOption(arg, "-nr")) // FIXME: deprecated, remove after 2025.02.30
         {
             deprecatedOption(arg, "--no-recurse", "2025.02.30");
             recurse = false;
         }
-        else if (::strcmp(arg, "--no-recurse") == 0)
-        {
-            recurse = false;
-        }
         else
         {
-            fileList.addPath(trimCount, arg, recurse);
+            cLog::Warning("Unknown option: '{}'.", arg);
         }
     }
 
@@ -174,7 +198,7 @@ int main(int argc, char* argv[])
     config.dump();
     if (resPathPrefix != nullptr)
     {
-        cLog::Info("Resource path prefix: {}.", resPathPrefix);
+        cLog::Info("Path prefix:        {}.", resPathPrefix);
     }
     cLog::Info("");
 
@@ -211,9 +235,9 @@ int main(int argc, char* argv[])
     if (imageList.doPacking(outputAtlasName, outputResName, resPathPrefix, atlasSize) == false)
     {
         cLog::Info("");
-        cLog::Info("Desired texture size {} x {}, but maximum {} x {}.",
+        cLog::Info("Desired atlas size {} x {}, but maximum {} x {}.",
                    atlasSize.width, atlasSize.height,
-                   config.maxTextureSize, config.maxTextureSize);
+                   config.maxAtlasSize, config.maxAtlasSize);
 
         return -1;
     }
@@ -228,23 +252,23 @@ void showHelp(const char* name, const sConfig& config)
     name = p != nullptr
         ? p + 1
         : name;
-    cLog::Info("  {} INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> -o ATLAS", name);
+    cLog::Info("  {} INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH", name);
     cLog::Info("");
     cLog::Info("  INPUT_IMAGE        Input image file or directory (space-separated)");
-    cLog::Info("  -b size            Add border around sprites (default: {} px)", config.border);
-    cLog::Info("  -p size            Add padding between sprites (default: {} px)", config.padding);
-    cLog::Info("  -o ATLAS           Output atlas file name (default: PNG)");
-    cLog::Info("  --res DESC_TEXTURE Output atlas description as XML");
-    cLog::Info("  --prefix STRING    Add prefix to texture path");
-    cLog::Info("  --classic-packing  Use alternative packing algorithm (may produce better results, default: {})", isEnabled(config.slowMethod));
-    cLog::Info("  --drop-ext         Remove file extension from sprite ID (default: {})", isEnabled(config.dropExt));
-    cLog::Info("  --dupes            Allow duplicate sprites (default: {})", isEnabled(config.alowDupes));
-    cLog::Info("  --keep-float       Preserve float hotspot coordinates (default: {})", isEnabled(config.keepFloat));
-    cLog::Info("  --max size         Maximum atlas size (default: {} px)", config.maxTextureSize);
-    // cLog::Info("  --multi            Enable multi-atlas output (default: {})", isEnabled(config.multi));
+    cLog::Info("  --border=SIZE      Add border around sprites (default: {} px)", config.border);
+    cLog::Info("  --padding=SIZE     Add padding between sprites (default: {} px)", config.padding);
+    cLog::Info("  --atlas=PATH       Output atlas file name (default: PNG)");
+    cLog::Info("  --xml=PATH         The output file path for the atlas description in XML format");
+    cLog::Info("  --prefix=PREFIX    Add prefix to texture path");
+    cLog::Info("  --algorithm=NAME   Packing algorithm (kdtree or classic, default: {})", sConfig::ToName(config.algorithm));
+    cLog::Info("  --drop-ext         Remove file extension from sprite ID (default: {})", toString(config.dropExt));
+    cLog::Info("  --allow-dupes      Allow duplicate sprites (default: {})", toString(config.alowDupes));
+    cLog::Info("  --keep-float       Preserve float hotspot coordinates (default: {})", toString(config.keepFloat));
+    cLog::Info("  --atlas-size=SIZE  Maximum atlas size (default: {} px)", config.maxAtlasSize);
+    // cLog::Info("  --multi            Enable multi-atlas output (default: {})", toString(config.multi));
     cLog::Info("  --no-recurse       Do not search subdirectories");
-    cLog::Info("  --overlay          Overlay sprites (default: {})", isEnabled(config.overlay));
-    cLog::Info("  --pot              Make atlas dimensions power of two (default: {})", isEnabled(config.pot));
-    cLog::Info("  --trim             Trim transparent borders from sprites (default: {})", isEnabled(config.trim));
-    cLog::Info("  --trim-name count  Remove 'count' characters from the start of sprite IDs (default: 0)");
+    cLog::Info("  --overlay          Overlay sprites (default: {})", toString(config.overlay));
+    cLog::Info("  --pot              Make atlas dimensions power of two (default: {})", toString(config.pot));
+    cLog::Info("  --trim-sprite      Trim transparent borders from sprites (default: {})", toString(config.trimSprite));
+    cLog::Info("  --trim-id=COUNT    Remove COUNT characters from the start of sprite IDs (default: 0)");
 }

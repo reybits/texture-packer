@@ -11,6 +11,7 @@
 #include "File.h"
 #include "Image.h"
 #include "KDTreePacker.h"
+#include "Log.h"
 #include "SimplePacker.h"
 #include "Trim.h"
 #include "Types/Types.h"
@@ -20,13 +21,17 @@
 
 std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sConfig& config)
 {
-    if (config.slowMethod)
+    if (config.algorithm == sConfig::Algorithm::Classic)
     {
         std::stable_sort(imageList.begin(), imageList.end(), [](const cImage* a, const cImage* b) -> bool {
             return SimplePacker::Compare(a, b);
         });
 
         return std::make_unique<SimplePacker>(static_cast<uint32_t>(imageList.size()), config);
+    }
+    else if (config.algorithm != sConfig::Algorithm::KDTree)
+    {
+        cLog::Error("Unknown algorithm, fallback to KD-Tree.");
     }
 
     std::stable_sort(imageList.begin(), imageList.end(), [](const cImage* a, const cImage* b) -> bool {

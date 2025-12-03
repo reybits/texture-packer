@@ -63,8 +63,8 @@ sSize cAtlasSize::nextSize(const sSize& size, uint32_t step) const
 
 bool cAtlasSize::isGood(const sSize& size) const
 {
-    return size.width <= m_config.maxTextureSize
-        && size.height <= m_config.maxTextureSize;
+    return size.width <= m_config.maxAtlasSize
+        && size.height <= m_config.maxAtlasSize;
 }
 
 uint32_t cAtlasSize::NextPot(uint32_t size)

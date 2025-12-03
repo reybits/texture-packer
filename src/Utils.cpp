@@ -62,9 +62,18 @@ const char* formatNum(int num, char delimiter)
     return Out;
 }
 
-const char* isEnabled(bool enabled)
+const char* toString(bool enabled)
 {
     return enabled ? "enabled" : "disabled";
+}
+
+bool isOption(const char* arg, const char* name)
+{
+    if (::strncmp(arg, "--", 2) != 0)
+    {
+        return ::strcmp(arg, name) == 0;
+    }
+    return ::strncmp(arg, name, ::strlen(name)) == 0;
 }
 
 bool shiftArg(int argc, char* argv[], int& idx, const char*& value)

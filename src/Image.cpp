@@ -86,7 +86,7 @@ bool cImage::load(const char* path, uint32_t trimPath, cTrim* trim)
     m_spriteId = TrimPath(path, trimPath);
     if (m_spriteId.length() == 0)
     {
-        cLog::Error("Trim value too big for path '{}'.", path);
+        cLog::Error("Trim value '{}' too big for path '{}'.", trimPath, path);
         return false;
     }
 

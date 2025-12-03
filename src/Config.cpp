@@ -10,20 +10,58 @@
 #include "Log.h"
 #include "Utils.h"
 
+namespace
+{
+    constexpr static struct
+    {
+        const char* id;
+        const char* name;
+        sConfig::Algorithm algorithm;
+    } Algos[] = {
+        { "kdtree", "KD-Tree", sConfig::Algorithm::KDTree },
+        { "classic", "Classic", sConfig::Algorithm::Classic },
+    };
+
+} // namespace
+
 void sConfig::dump() const
 {
     // General
-    cLog::Info("Method:             {}", slowMethod ? "Classic" : "KD-Tree");
+    cLog::Info("Algorithm:          {}", ToName(algorithm));
     cLog::Info("Border:             {} px", border);
     cLog::Info("Padding:            {} px", padding);
-    cLog::Info("Max atlas size:     {} px", maxTextureSize);
+    cLog::Info("Max atlas size:     {} px", maxAtlasSize);
 
     // Features
-    cLog::Info("Keep hotspot float: {}", isEnabled(keepFloat) ? "Enabled" : "Disabled");
-    cLog::Info("Power of Two:       {}", isEnabled(pot) ? "Enabled" : "Disabled");
-    // cLog::Info("Multi-atlas:        {}", isEnabled(multi) ? "Enabled" : "Disabled");
-    cLog::Info("Trim sprites:       {}", isEnabled(trim) ? "Enabled" : "Disabled");
-    cLog::Info("Drop extension:     {}", isEnabled(dropExt) ? "Enabled" : "Disabled");
-    cLog::Info("Allow duplicates:   {}", isEnabled(alowDupes) ? "Enabled" : "Disabled");
-    cLog::Info("Overlay:            {}", isEnabled(overlay) ? "Enabled" : "Disabled");
+    cLog::Info("Keep hotspot float: {}", toString(keepFloat));
+    cLog::Info("Power of Two:       {}", toString(pot));
+    // cLog::Info("Multi-atlas:        {}", toString(multi));
+    cLog::Info("Trim sprites:       {}", toString(trimSprite));
+    cLog::Info("Drop extension:     {}", toString(dropExt));
+    cLog::Info("Allow duplicates:   {}", toString(alowDupes));
+    cLog::Info("Overlay:            {}", toString(overlay));
+}
+
+sConfig::Algorithm sConfig::ToAlgorithm(const char* str)
+{
+    for (const auto& m : Algos)
+    {
+        if (::strcmp(str, m.id) == 0)
+        {
+            return m.algorithm;
+        }
+    }
+    return sConfig::Algorithm::KDTree;
+}
+
+const char* sConfig::ToName(Algorithm algo)
+{
+    for (const auto& m : Algos)
+    {
+        if (m.algorithm == algo)
+        {
+            return m.name;
+        }
+    }
+    return "Unknown";
 }

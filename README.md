@@ -4,7 +4,7 @@ master      | development
 :---------: | :-----------:
 [![Build status: master](https://ci.appveyor.com/api/projects/status/lqfgod1e1pncowc2/branch/master?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/master "Branch: master") ![GitHub last commit (master)](https://img.shields.io/github/last-commit/reybits/texture-packer/master) | [![Build status: development](https://ci.appveyor.com/api/projects/status/lqfgod1e1pncowc2/branch/development?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/development "Branch: development") ![GitHub last commit (development)](https://img.shields.io/github/last-commit/reybits/texture-packer/development)
 
-The Texture Packer tool efficiently combines multiple images into a single optimized texture atlas, reducing memory usage and improving rendering performance. It streamlines asset management for game development and UI design by optimizing space usage with intelligent packing algorithms.
+The Texture Packer tool efficiently combines multiple images into a single optimized texture atlas, minimizing memory usage and boosting rendering performance. By leveraging advanced packing algorithms, it maximizes space utilization and streamlines asset management for game development and UI design, enabling faster load times and simplified workflow.
 
 ## Key features
 
@@ -17,17 +17,23 @@ The Texture Packer tool efficiently combines multiple images into a single optim
 ## Usage
 
 ```sh
-texpacker INPUT_IMAGE [INPUT_IMAGE] -o ATLAS
-  INPUT_IMAGE        input image name or directory separated by space
-  -o ATLAS           output atlas name (default PNG)
-  -res DESC_TEXTURE  output atlas description as XML
-  -pot               make power of two atlas
-  -trim              trim sprites
-  -overlay           draw overlay over sprite
-  -dupes             allow dupes
-  -slow              use slow method instead kd-tree
-  -b size            add border around sprites
-  -p size            add padding between sprites
+texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> -o PATH
+  INPUT_IMAGE        Input image file or directory (space-separated)
+  --border=SIZE      Add border around sprites (default: 0 px)
+  --padding=SIZE     Add padding between sprites (default: 1 px)
+  --atlas=PATH       Output atlas file name (default: PNG)
+  --xml=PATH         The output file path for the atlas description in XML format
+  --prefix=PREFIX    Add prefix to texture path
+  --algorithm=NAME   Packing algorithm (kdtree or classic, default: kdtree)
+  --drop-ext         Remove file extension from sprite ID (default: false)
+  --allow-dupes      Allow duplicate sprites (default: false)
+  --keep-float       Preserve float hotspot coordinates (default: false)
+  --atlas-size=SIZE  Maximum atlas size (default: 2048 px)
+  --no-recurse       Do not search subdirectories
+  --overlay          Overlay sprites (default: false)
+  --pot              Make atlas dimensions power of two (default: false)
+  --trim-sprite      Trim transparent borders from sprites (default: false)
+  --trim-id=COUNT    Remove COUNT characters from the start of sprite IDs (default: 0)
 ```
 
 ## Download and build

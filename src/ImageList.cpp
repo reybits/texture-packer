@@ -16,12 +16,12 @@
 #include "Trim.h"
 #include "Utils.h"
 
-#include <sstream>
+#include <fmt/core.h>
 
 cImageList::cImageList(const sConfig& config, uint32_t reserve)
     : m_config(config)
     , m_size(config)
-    , m_trim(config.trim
+    , m_trim(config.trimSprite
                  ? new cTrim()
                  : nullptr)
 {
@@ -105,7 +105,7 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
             {
                 auto outputAtlasName = saver.getAtlasName();
 
-                // write resource file
+                // write XML
                 if (outputResName != nullptr)
                 {
                     std::string atlasName = resPathPrefix != nullptr
@@ -117,10 +117,14 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
                     if (file.open(outputResName, "w"))
                     {
                         writeHeader(file);
-
                         packer->generateResFile(file, atlasName);
-
                         writeFooter(file);
+
+                        cLog::Info("Atlas description '{}' was created.", outputResName);
+                    }
+                    else
+                    {
+                        cLog::Error("Error writing atlas description '{}'.", outputResName);
                     }
                 }
 
@@ -129,7 +133,7 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
                 auto percent = static_cast<uint32_t>(100.0f * spritesArea / atlasArea);
 
                 cLog::Info("Atlas '{}' ({} x {}, fill: {}%) was created in {:.2f} ms.",
-                           outputAtlasName.c_str(),
+                           outputAtlasName,
                            atlasSize.width, atlasSize.height,
                            percent,
                            (getCurrentTime() - startTime) * 0.001f);
@@ -187,15 +191,12 @@ bool cImageList::prepareAtlas(AtlasPacker* packer, sSize& atlasSize)
 
 void cImageList::writeHeader(cFile& file)
 {
-    std::stringstream out;
-    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    out << "<atlas>\n";
-    file.write((void*)out.str().c_str(), out.str().length());
+    std::string out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<atlas>\n";
+    file.write(out.c_str(), out.length());
 }
 
 void cImageList::writeFooter(cFile& file)
 {
-    std::stringstream out;
-    out << "</atlas>\n";
-    file.write((void*)out.str().c_str(), out.str().length());
+    std::string out = "</atlas>\n";
+    file.write(out.c_str(), out.length());
 }
