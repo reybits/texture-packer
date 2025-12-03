@@ -17,7 +17,7 @@ The Texture Packer tool efficiently combines multiple images into a single optim
 ## Usage
 
 ```sh
-texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> -o PATH
+texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH
   INPUT_IMAGE        Input image file or directory (space-separated)
   --border=SIZE      Add border around sprites (default: 0 px)
   --padding=SIZE     Add padding between sprites (default: 1 px)
