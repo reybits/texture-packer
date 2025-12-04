@@ -29,8 +29,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/third-party/fmtlib/include
-    )
+)
 
 # link_directories(
 # )
@@ -38,9 +37,11 @@ include_directories(
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/fmtlib)
+add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/stb)
 
 link_libraries(
     FmtLib
+    StbLib
     )
 
 add_executable(${APPLICATION_NAME}
