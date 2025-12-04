@@ -23,7 +23,14 @@ public:
     cImageList(const sConfig& config, uint32_t reserve);
     ~cImageList();
 
-    const cImage* loadImage(const std::string& path, uint32_t trimCount);
+    enum class Result
+    {
+        OK,
+        NotAnImage,
+        CannotOpen,
+        TooBig,
+    };
+    Result loadImage(const std::string& path, uint32_t trimCount);
 
     bool doPacking(const char* desiredAtlasName, const char* outputResName,
                    const char* resPathPrefix, sSize& atlasSize);

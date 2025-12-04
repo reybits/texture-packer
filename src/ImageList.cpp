@@ -38,25 +38,32 @@ cImageList::~cImageList()
     delete m_trim;
 }
 
-const cImage* cImageList::loadImage(const std::string& path, uint32_t trimCount)
+cImageList::Result cImageList::loadImage(const std::string& path, uint32_t trimCount)
 {
-    if (cImage::IsImage(path.c_str()))
+    if (cImage::IsImage(path.c_str()) == false)
     {
-        std::unique_ptr<cImage> image(new cImage());
-
-        if (image->load(path.c_str(), trimCount, m_trim) == true)
-        {
-            auto& bmp = image->getBitmap();
-            auto& size = bmp.getSize();
-            m_size.addRect(size);
-
-            m_images.push_back(image.release());
-
-            return m_images.back();
-        }
+        return Result::NotAnImage;
     }
 
-    return nullptr;
+    std::unique_ptr<cImage> image(new cImage());
+
+    if (image->load(path.c_str(), trimCount, m_trim) == false)
+    {
+        return Result::CannotOpen;
+    }
+
+    auto& bmp = image->getBitmap();
+    auto& size = bmp.getSize();
+    if (m_size.isFitToMaxSize(size) == false)
+    {
+        return Result::TooBig;
+    }
+
+    m_size.addRect(size);
+
+    m_images.push_back(image.release());
+
+    return Result::OK;
 }
 
 bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResName,

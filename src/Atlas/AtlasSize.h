@@ -17,6 +17,8 @@ class cAtlasSize final
 public:
     explicit cAtlasSize(const sConfig& config);
 
+    bool isFitToMaxSize(const sSize& size) const;
+
     void addRect(const sSize& size);
     uint32_t getArea() const;
 

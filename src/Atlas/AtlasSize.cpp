@@ -17,8 +17,18 @@ cAtlasSize::cAtlasSize(const sConfig& config)
 {
 }
 
+bool cAtlasSize::isFitToMaxSize(const sSize& size) const
+{
+    // Include atlas BORDER
+    auto width = size.width + m_config.border * 2u;
+    auto height = size.height + m_config.border * 2u;
+
+    return !(width > m_config.maxAtlasSize || height > m_config.maxAtlasSize);
+}
+
 void cAtlasSize::addRect(const sSize& size)
 {
+    // include sprite PADDING
     auto width = size.width + m_config.padding * 2u;
     auto height = size.height + m_config.padding * 2u;
 

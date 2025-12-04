@@ -216,10 +216,26 @@ int main(int argc, char* argv[])
 
     for (const auto& f : files)
     {
-        auto image = imageList.loadImage(f.path, f.trimCount);
-        if (image == nullptr)
+        auto result = imageList.loadImage(f.path, f.trimCount);
+        switch (result)
         {
+        case cImageList::Result::OK:
+            break;
+
+        case cImageList::Result::NotAnImage:
+            cLog::Warning("File '{}' is not an image.", f.path);
+            break;
+
+        case cImageList::Result::CannotOpen:
             cLog::Warning("File '{}' not loaded.", f.path);
+            break;
+
+        case cImageList::Result::TooBig:
+            cLog::Error("Image '{}' is too large for the atlas (max size: {} x {}).",
+                        f.path,
+                        config.maxAtlasSize, config.maxAtlasSize);
+
+            return -1;
         }
     }
 
