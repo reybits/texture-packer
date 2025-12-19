@@ -84,8 +84,8 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
 
     auto packer = AtlasPacker::create(m_images, m_config);
 
-    cLog::Info("Packing:");
-    cLog::Info(" - trying {} x {}.", atlasSize.width, atlasSize.height);
+    cLog::Info("Packing atlas:");
+    cLog::Info(" - size: {} x {}", atlasSize.width, atlasSize.height);
 
     bool done = false;
     do
@@ -98,7 +98,7 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
                 return false;
             }
 
-            cLog::Info(" - trying {} x {}.", atlasSize.width, atlasSize.height);
+            cLog::Info(" - size: {} x {}", atlasSize.width, atlasSize.height);
         }
         else
         {
