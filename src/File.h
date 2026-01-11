@@ -17,6 +17,11 @@ public:
     cFile();
     ~cFile();
 
+    bool isOpened() const
+    {
+        return m_file != nullptr;
+    }
+
     bool open(const char* path, const char* mode = "rb");
     void close();
 
