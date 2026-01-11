@@ -16,7 +16,54 @@
 #include "Trim.h"
 #include "Utils.h"
 
+#include <algorithm>
+#include <cassert>
 #include <fmt/core.h>
+#include <vector>
+
+namespace
+{
+    std::string GenerateAtlasName(const char* baseName, uint32_t index)
+    {
+        std::string name(baseName);
+
+        // Find the last dot for extension
+        auto dotPos = name.rfind('.');
+        if (dotPos != std::string::npos)
+        {
+            // Insert index before extension
+            auto base = name.substr(0, dotPos);
+            auto ext = name.substr(dotPos);
+
+            // INFO: This code is for testing purposes, remove after testing
+            return fmt::format("{}_{}{}", base, index, ext);
+
+            return index == 0
+                ? fmt::format("{}{}", base, ext)
+                : fmt::format("{}_{}{}", base, index, ext);
+        }
+
+        // INFO: This code is for testing purposes, remove after testing
+        return fmt::format("{}_{}", name, index);
+
+        // No extension, just append
+        return index == 0
+            ? fmt::format("{}", name)
+            : fmt::format("{}_{}", name, index);
+    }
+
+    cAtlasSize GetAtlasSize(const sConfig& config, const ImageList& images)
+    {
+        cAtlasSize packedSize(config);
+        for (auto img : images)
+        {
+            packedSize.addRect(img->getBitmap().getSize());
+        }
+
+        return packedSize;
+    }
+
+} // namespace
 
 cImageList::cImageList(const sConfig& config, uint32_t reserve)
     : m_config(config)
@@ -74,6 +121,73 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
         return true;
     }
 
+    return m_config.enableMultiAtlas
+        ? packMultiAtlas(desiredAtlasName, outputResName, resPathPrefix, atlasSize)
+        : packSingleAtlas(desiredAtlasName, outputResName, resPathPrefix, atlasSize);
+}
+
+bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* outputResName,
+                                const char* resPathPrefix, sSize& atlasSize)
+{
+    ImageList remainingImages = m_images;
+    uint32_t atlasIndex = 0;
+
+    cFile xmlFile;
+    writeXmlHeader(xmlFile, outputResName);
+
+    while (remainingImages.empty() == false)
+    {
+        const sSize maxSize{ m_config.maxAtlasSize, m_config.maxAtlasSize };
+        ImageList packedImages;
+
+        if (packImagesToMaxSize(remainingImages, maxSize, packedImages) == false)
+        {
+            cLog::Error("Cannot fit any images into atlas #{}.", atlasIndex);
+            return false;
+        }
+
+        const auto startTime = getCurrentTime();
+
+        sSize finalSize;
+        std::unique_ptr<AtlasPacker> packer;
+        if (optimizeAtlasSize(packedImages, maxSize, finalSize, packer) == false)
+        {
+            cLog::Error("Cannot optimize size for atlas #{}.", atlasIndex);
+            return false;
+        }
+
+        packer->buildAtlas();
+
+        cAtlasSize packedSize = GetAtlasSize(m_config, packedImages);
+        const auto spritesArea = packedSize.getArea();
+
+        const auto atlasName = GenerateAtlasName(desiredAtlasName, atlasIndex);
+        if (saveAtlas(packer.get(), atlasName.c_str(), resPathPrefix, xmlFile,
+                      finalSize, spritesArea, startTime)
+            == false)
+        {
+            return false;
+        }
+
+        // Remove packed images from remaining list
+        for (auto img : packedImages)
+        {
+            remainingImages.erase(std::remove(remainingImages.begin(), remainingImages.end(), img),
+                                  remainingImages.end());
+        }
+
+        atlasSize = finalSize;
+        atlasIndex++;
+    }
+
+    writeXmlFooter(xmlFile, outputResName);
+
+    return true;
+}
+
+bool cImageList::packSingleAtlas(const char* desiredAtlasName, const char* outputResName,
+                                 const char* resPathPrefix, sSize& atlasSize)
+{
     atlasSize = m_size.calcSize();
     if (m_size.isGood(atlasSize) == false)
     {
@@ -90,7 +204,7 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
     bool done = false;
     do
     {
-        if (prepareSize(packer.get(), atlasSize) == false)
+        if (prepareSize(packer.get(), atlasSize, m_images) == false)
         {
             atlasSize = m_size.nextSize(atlasSize, 8u);
             if (m_size.isGood(atlasSize) == false)
@@ -102,55 +216,17 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
         }
         else
         {
+            cFile xmlFile;
+            writeXmlHeader(xmlFile, outputResName);
+
+            auto spritesArea = m_size.getArea();
             packer->buildAtlas();
-            auto& atlas = packer->getBitmap();
 
-            cImageSaver saver(atlas, desiredAtlasName);
+            // We don't care about the result here, as everything is already packed.
+            saveAtlas(packer.get(), desiredAtlasName, resPathPrefix, xmlFile,
+                      atlasSize, spritesArea, startTime);
 
-            // write texture
-            if (saver.save() == true)
-            {
-                auto outputAtlasName = saver.getAtlasName();
-
-                // write XML
-                if (outputResName != nullptr)
-                {
-                    std::string atlasName = resPathPrefix != nullptr
-                        ? resPathPrefix
-                        : "";
-                    atlasName += outputAtlasName;
-
-                    cFile file;
-                    if (file.open(outputResName, "w"))
-                    {
-                        writeHeader(file);
-                        packer->generateResFile(file, atlasName);
-                        writeFooter(file);
-
-                        cLog::Info("Atlas description '{}' was created.", outputResName);
-                    }
-                    else
-                    {
-                        cLog::Error("Error writing atlas description '{}'.", outputResName);
-                    }
-                }
-
-                auto spritesArea = m_size.getArea();
-                auto atlasArea = atlasSize.width * atlasSize.height;
-                auto percent = static_cast<uint32_t>(100.0f * spritesArea / atlasArea);
-
-                cLog::Info("Atlas '{}' ({} x {}, fill: {}%) was created in {:.2f} ms.",
-                           outputAtlasName,
-                           atlasSize.width, atlasSize.height,
-                           percent,
-                           (getCurrentTime() - startTime) * 0.001f);
-            }
-            else
-            {
-                cLog::Error("Error writing atlas '{}' ({} x {})",
-                            desiredAtlasName,
-                            atlasSize.width, atlasSize.height);
-            }
+            writeXmlFooter(xmlFile, outputResName);
 
             done = true;
         }
@@ -159,10 +235,117 @@ bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResNa
     return true;
 }
 
-bool cImageList::prepareSize(AtlasPacker* packer, const sSize& atlasSize)
+bool cImageList::packImagesToMaxSize(ImageList& remainingImages, const sSize& maxSize, ImageList& outPackedImages)
+{
+    outPackedImages.clear();
+
+    auto packer = AtlasPacker::create(remainingImages, m_config);
+    packer->setSize(maxSize);
+
+    // Try to add as many remaining images as possible
+    for (auto img : remainingImages)
+    {
+        if (packer->add(img))
+        {
+            outPackedImages.push_back(img);
+        }
+    }
+
+    return outPackedImages.empty() == false;
+}
+
+bool cImageList::optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize,
+                                   sSize& outFinalSize, std::unique_ptr<AtlasPacker>& packer)
+{
+    // Calculate optimal size based on packed images
+    cAtlasSize packedSize = GetAtlasSize(m_config, packedImages);
+    const auto optimalSize = packedSize.calcSize();
+
+    packer = AtlasPacker::create(packedImages, m_config);
+
+    if (packedSize.isGood(optimalSize) == false)
+    {
+        // Optimal size not valid, use max size
+        outFinalSize = maxSize;
+        packer->setSize(maxSize);
+        for (auto img : packedImages)
+        {
+            packer->add(img);
+        }
+        return true;
+    }
+
+    // Try sizes from optimal upward until everything fits
+    sSize trySize = optimalSize;
+    while (packedSize.isGood(trySize))
+    {
+        if (prepareSize(packer.get(), trySize, packedImages))
+        {
+            outFinalSize = trySize;
+            return true;
+        }
+
+        trySize = packedSize.nextSize(trySize, 8u);
+
+        // Don't exceed max size
+        if (trySize.width > maxSize.width || trySize.height > maxSize.height)
+        {
+            outFinalSize = maxSize;
+            packer->setSize(maxSize);
+            for (auto img : packedImages)
+            {
+                packer->add(img);
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool cImageList::saveAtlas(AtlasPacker* packer, const char* desiredAtlasName,
+                           const char* resPathPrefix, cFile& xmlFile,
+                           const sSize& atlasSize, uint32_t spritesArea, uint64_t startTime)
+{
+    auto& atlas = packer->getBitmap();
+    cImageSaver saver(atlas, desiredAtlasName);
+
+    if (saver.save() == false)
+    {
+        cLog::Error("Error writing atlas '{}' ({} x {})",
+                    desiredAtlasName,
+                    atlasSize.width, atlasSize.height);
+        return false;
+    }
+
+    const auto outputAtlasName = saver.getAtlasName();
+
+    // Write XML entry
+    if (xmlFile.isOpened())
+    {
+        std::string atlasPath = resPathPrefix != nullptr
+            ? resPathPrefix
+            : "";
+        atlasPath += outputAtlasName;
+        packer->generateResFile(xmlFile, atlasPath);
+    }
+
+    const auto atlasArea = atlasSize.width * atlasSize.height;
+    const auto percent = static_cast<uint32_t>(100.0f * spritesArea / atlasArea);
+
+    cLog::Info("Atlas '{}' ({} x {}, fill: {}%) was created in {:.2f} ms.",
+               outputAtlasName,
+               atlasSize.width, atlasSize.height,
+               percent,
+               (getCurrentTime() - startTime) * 0.001f);
+
+    return true;
+}
+
+bool cImageList::prepareSize(AtlasPacker* packer, const sSize& atlasSize, const ImageList& images)
 {
     packer->setSize(atlasSize);
-    for (auto img : m_images)
+    for (auto img : images)
     {
         if (packer->add(img) == false)
         {
@@ -173,37 +356,28 @@ bool cImageList::prepareSize(AtlasPacker* packer, const sSize& atlasSize)
     return true;
 }
 
-bool cImageList::prepareAtlas(AtlasPacker* packer, sSize& atlasSize)
+void cImageList::writeXmlHeader(cFile& xmlFile, const char* outputResName)
 {
-    do
+    assert(xmlFile.isOpened() == false);
+
+    if (xmlFile.open(outputResName, "w"))
     {
-        auto result = prepareSize(packer, atlasSize);
-        if (result)
-        {
-            return true;
-        }
-        else
-        {
-            auto desiredSize = m_size.nextSize(atlasSize, 8u);
-            if (m_size.isGood(desiredSize) == false)
-            {
-                return false;
-            }
-
-            atlasSize = desiredSize;
-            cLog::Info(" - trying {} x {}.", atlasSize.width, atlasSize.height);
-        }
-    } while (true);
+        std::string out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<atlas>\n";
+        xmlFile.write(out.c_str(), out.length());
+    }
+    else if (outputResName != nullptr)
+    {
+        cLog::Error("Error writing atlas description '{}'.", outputResName);
+    }
 }
 
-void cImageList::writeHeader(cFile& file)
+void cImageList::writeXmlFooter(cFile& xmlFile, const char* outputResName)
 {
-    std::string out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<atlas>\n";
-    file.write(out.c_str(), out.length());
-}
+    if (xmlFile.isOpened())
+    {
+        std::string out = "</atlas>\n";
+        xmlFile.write(out.c_str(), out.length());
 
-void cImageList::writeFooter(cFile& file)
-{
-    std::string out = "</atlas>\n";
-    file.write(out.c_str(), out.length());
+        cLog::Info("Atlas description '{}' was created.", outputResName);
+    }
 }

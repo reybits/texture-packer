@@ -35,7 +35,11 @@ void cBitmap::createBitmap(const sSize& size)
     m_size = size;
 
     m_manageData = true;
-    m_data = new Pixel[size.width * size.height];
+    const auto pixelCount = size.width * size.height;
+    m_data = new Pixel[pixelCount];
+
+    // Initialize all pixels to transparent black
+    std::fill(m_data, m_data + pixelCount, Pixel{ 0, 0, 0, 0 });
 }
 
 void cBitmap::setBitmap(const sSize& size, void* data)

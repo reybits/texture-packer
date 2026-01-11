@@ -31,11 +31,11 @@ void sConfig::dump() const
     cLog::Info("Border:             {} px", border);
     cLog::Info("Padding:            {} px", padding);
     cLog::Info("Max atlas size:     {} px", maxAtlasSize);
+    cLog::Info("Multi-atlas:        {}", toString(enableMultiAtlas));
 
     // Features
     cLog::Info("Keep hotspot float: {}", toString(keepFloat));
     cLog::Info("Power of Two:       {}", toString(pot));
-    // cLog::Info("Multi-atlas:        {}", toString(enableMultiAtlas));
     cLog::Info("Trim sprites:       {}", toString(trimSprite));
     cLog::Info("Drop extension:     {}", toString(dropExt));
     cLog::Info("Allow duplicates:   {}", toString(alowDupes));
