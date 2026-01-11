@@ -41,10 +41,23 @@ public:
     }
 
 private:
-    bool prepareSize(AtlasPacker* packer, const sSize& atlasSize);
-    bool prepareAtlas(AtlasPacker* packer, sSize& atlasSize);
-    void writeHeader(cFile& file);
-    void writeFooter(cFile& file);
+    bool packSingleAtlas(const char* desiredAtlasName, const char* outputResName,
+                         const char* resPathPrefix, sSize& atlasSize);
+
+    bool packMultiAtlas(const char* desiredAtlasName, const char* outputResName,
+                        const char* resPathPrefix, sSize& atlasSize);
+
+    bool packImagesToMaxSize(ImageList& remainingImages, const sSize& maxSize, ImageList& outPackedImages);
+    bool optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize, sSize& outFinalSize,
+                           std::unique_ptr<AtlasPacker>& packer);
+
+    bool saveAtlas(AtlasPacker* packer, const char* atlasName,
+                   const char* resPathPrefix, cFile& xmlFile,
+                   const sSize& atlasSize, uint32_t spritesArea, uint64_t startTime);
+
+    bool prepareSize(AtlasPacker* packer, const sSize& atlasSize, const ImageList& images);
+    void writeXmlHeader(cFile& xmlFile, const char* outputResName);
+    void writeXmlFooter(cFile& xmlFile, const char* outputResName);
 
 private:
     const sConfig& m_config;
