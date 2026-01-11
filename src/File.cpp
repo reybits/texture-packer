@@ -20,6 +20,16 @@ cFile::~cFile()
 
 bool cFile::open(const char* path, const char* mode)
 {
+    if (path == nullptr || mode == nullptr)
+    {
+        return false;
+    }
+
+    if (m_file != nullptr)
+    {
+        return false;
+    }
+
     m_file = ::fopen(path, mode);
     if (m_file != nullptr)
     {
