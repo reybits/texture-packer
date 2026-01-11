@@ -16,7 +16,7 @@ KDTreePacker::KDTreePacker(const sConfig& config)
 {
 }
 
-KDTreePacker::~KDTreePacker(void)
+KDTreePacker::~KDTreePacker()
 {
     delete m_root;
 }

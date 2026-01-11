@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     sConfig config;
 
-    cLog::Info("Texture Packer v1.3.6.");
+    cLog::Info("Texture Packer v1.3.7.");
     cLog::Info("Copyright (c) 2017-2025 Andrey A. Ugolnik.");
     cLog::Info("");
     if (argc < 3)
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
         {
             config.pot = true;
         }
-        else if (isOption(arg, "--mulit-atlas"))
+        else if (isOption(arg, "--multi-atlas"))
         {
             config.enableMultiAtlas = true;
         }
@@ -278,7 +278,7 @@ void showHelp(const char* name, const sConfig& config)
     cLog::Info("  --border=SIZE      Add border around sprites (default: {} px)", config.border);
     cLog::Info("  --drop-ext         Remove file extension from sprite ID (default: {})", toString(config.dropExt));
     cLog::Info("  --keep-float       Preserve float hotspot coordinates (default: {})", toString(config.keepFloat));
-    cLog::Info("  --mulit-atlas      Enable multi-atlas output (default: {})", toString(config.enableMultiAtlas));
+    cLog::Info("  --multi-atlas      Enable multi-atlas output (default: {})", toString(config.enableMultiAtlas));
     cLog::Info("  --no-recurse       Do not search subdirectories");
     cLog::Info("  --overlay          Overlay sprites (default: {})", toString(config.overlay));
     cLog::Info("  --padding=SIZE     Add padding between sprites (default: {} px)", config.padding);

@@ -14,6 +14,17 @@
 
 class cKDNode;
 
+/**
+ * 2D K-D Tree packer for rectangle packing.
+ *
+ * Algorithm:
+ * - Recursively splits available space after placing each image
+ * - Splits horizontally or vertically based on remaining space
+ * - Optimized for long/thin sprites
+ *
+ * Time Complexity: O(n * h) where h is tree height (typically log n)
+ * Space Complexity: O(n) for tree nodes
+ */
 class KDTreePacker final : public AtlasPacker
 {
 public:

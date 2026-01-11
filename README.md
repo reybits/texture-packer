@@ -26,7 +26,7 @@ texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH
   --border=SIZE      Add border around sprites (default: 0 px)
   --drop-ext         Remove file extension from sprite ID (default: false)
   --keep-float       Preserve float hotspot coordinates (default: false)
-  --mulit-atlas      Enable multi-atlas output (default: false)
+  --multi-atlas      Enable multi-atlas output (default: false)
   --no-recurse       Do not search subdirectories
   --overlay          Overlay sprites (default: false)
   --padding=SIZE     Add padding between sprites (default: 1 px)
