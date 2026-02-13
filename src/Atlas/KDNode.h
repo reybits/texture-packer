@@ -26,7 +26,7 @@ public:
 private:
     bool isLeaf() const
     {
-        return m_childA == nullptr || m_childB == nullptr;
+        return m_childA == nullptr && m_childB == nullptr;
     }
 
 private:

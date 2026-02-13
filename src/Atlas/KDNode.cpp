@@ -59,25 +59,14 @@ cKDNode* cKDNode::add(const sSize& size)
         const auto subwidth = nodeWidth - imgWidth;
         const auto subheight = nodeHeight - imgHeight;
 
-        // static int last = -1;
         if (subwidth <= subheight)
         {
-            // if (last != 0)
-            // {
-            // last = 0;
-            // printf("-"); fflush(nullptr);
-            // }
             // split --
             m_childA = new cKDNode({ x, y, x + nodeWidth, y + imgHeight }, padding);
             m_childB = new cKDNode({ x, y + imgHeight, x + nodeWidth, y + imgHeight + subheight }, padding);
         }
         else
         {
-            // if (last != 1)
-            // {
-            // last = 1;
-            // printf("|"); fflush(nullptr);
-            // }
             // split |
             m_childA = new cKDNode({ x, y, x + imgWidth, y + nodeHeight }, padding);
             m_childB = new cKDNode({ x + imgWidth, y, x + imgWidth + subwidth, y + nodeHeight }, padding);
