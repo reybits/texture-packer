@@ -49,16 +49,27 @@ namespace
 
 bool cImage::IsImage(const char* path)
 {
-    if (path != nullptr)
+    if (path == nullptr)
     {
-        std::string res = path;
-        auto pos = res.find_last_of("/");
-        return pos != std::string::npos
-            && pos + 1 != std::string::npos
-            && res[pos + 1] != '.';
+        return false;
     }
 
-    return false;
+    std::string str = path;
+    auto dot = str.find_last_of('.');
+    if (dot == std::string::npos)
+    {
+        return false;
+    }
+
+    auto ext = str.substr(dot);
+    for (auto& c : ext)
+    {
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+
+    return ext == ".png" || ext == ".bmp" || ext == ".tga"
+        || ext == ".jpg" || ext == ".jpeg"
+        || ext == ".psd" || ext == ".gif";
 }
 
 cImage::~cImage()

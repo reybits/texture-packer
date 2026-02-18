@@ -223,7 +223,6 @@ int main(int argc, char* argv[])
             break;
 
         case cImageList::Result::NotAnImage:
-            cLog::Warning("File '{}' is not an image.", f.path);
             break;
 
         case cImageList::Result::CannotOpen:
