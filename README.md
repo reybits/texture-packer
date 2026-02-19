@@ -52,7 +52,7 @@ make release
 
 ```sh
 brew tap reybits/homebrew-tap
-brew install reybits/texture-packer
+brew install reybits/homebrew-tap/texture-packer
 ```
 
 ## Input format notes
