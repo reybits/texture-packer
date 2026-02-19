@@ -55,6 +55,7 @@ private:
                    const char* resPathPrefix, cFile& xmlFile,
                    const sSize& atlasSize, uint32_t spritesArea, uint64_t startTime);
 
+    bool findBestSortAndSize(ImageList& images, const sSize& startSize, const sSize& maxSize, sSize& outSize);
     bool findMinimalAtlasSize(AtlasPacker* packer, ImageList& images, const sSize& startSize, sSize& outSize);
     bool prepareSize(AtlasPacker* packer, const sSize& atlasSize, const ImageList& images);
     void writeXmlHeader(cFile& xmlFile, const char* outputResName);
