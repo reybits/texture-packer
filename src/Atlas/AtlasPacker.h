@@ -23,6 +23,7 @@ class AtlasPacker
 {
 public:
     static std::unique_ptr<AtlasPacker> create(ImageList& imageList, const sConfig& config);
+    static std::unique_ptr<AtlasPacker> createPacker(const sConfig& config);
 
 public:
     AtlasPacker(const sConfig& config);
