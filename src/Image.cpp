@@ -14,6 +14,7 @@
 #include <stb/stb_image.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cstring>
 
 namespace
@@ -67,9 +68,19 @@ bool cImage::IsImage(const char* path)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     }
 
-    return ext == ".png" || ext == ".bmp" || ext == ".tga"
-        || ext == ".jpg" || ext == ".jpeg"
-        || ext == ".psd" || ext == ".gif";
+    return ext == ".bmp"
+        || ext == ".gif"
+        || ext == ".hdr"
+        || ext == ".jpeg"
+        || ext == ".jpg"
+        || ext == ".pbm"
+        || ext == ".pgm"
+        || ext == ".pic"
+        || ext == ".png"
+        || ext == ".pnm"
+        || ext == ".ppm"
+        || ext == ".psd"
+        || ext == ".tga";
 }
 
 cImage::~cImage()
