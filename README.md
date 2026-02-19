@@ -67,7 +67,7 @@ brew install reybits/texture-packer
 ***
 
 ```
-Copyright © 2017-2025 Andrey A. Ugolnik. All Rights Reserved.
+Copyright © 2017-2026 Andrey A. Ugolnik. All Rights Reserved.
 https://github.com/reybits
 and@reybits.dev
 ```

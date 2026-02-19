@@ -23,9 +23,7 @@ std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sCo
 {
     if (config.algorithm == sConfig::Algorithm::Classic)
     {
-        std::stable_sort(imageList.begin(), imageList.end(), [](const cImage* a, const cImage* b) -> bool {
-            return SimplePacker::Compare(a, b);
-        });
+        std::stable_sort(imageList.begin(), imageList.end(), SimplePacker::Compare);
 
         return std::make_unique<SimplePacker>(config);
     }
@@ -34,9 +32,7 @@ std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sCo
         cLog::Error("Unknown algorithm, fallback to KD-Tree.");
     }
 
-    std::stable_sort(imageList.begin(), imageList.end(), [](const cImage* a, const cImage* b) -> bool {
-        return KDTreePacker::Compare(a, b);
-    });
+    std::stable_sort(imageList.begin(), imageList.end(), KDTreePacker::Compare);
 
     return std::make_unique<KDTreePacker>(config);
 }
