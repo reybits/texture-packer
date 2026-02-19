@@ -8,11 +8,14 @@ The Texture Packer tool efficiently combines multiple images into a single optim
 
 ## Key features
 
-- Automatically add images from a folder or via the command line.
+- Automatically discovers images from folders or accepts them via the command line.
 - Supports input formats: JPEG, PNG, TGA, BMP, PSD, GIF, HDR, PIC, PNM.
-- Exports to PNG (default), TGA, and BMP.
-- Ability to trim input images to remove transparent areas.
-- Option to set a border around images for better separation.
+- Exports to PNG (default), TGA, and BMP with accompanying XML metadata.
+- Provides two packing algorithms: KD-Tree (default) and Classic.
+- Supports multi-atlas output when images exceed the maximum atlas size.
+- Trims transparent borders from input images to save space.
+- Adds configurable border and padding around sprites.
+- Supports power-of-two atlas dimensions.
 
 ## Usage
 
@@ -39,9 +42,11 @@ texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH
 
 ## Download and build
 
-You can browse the source code repository on GitHub or get a copy using git with the following command:
+Requires CMake 3.22+ and a C++17 compiler.
+
 ```sh
 git clone https://github.com/reybits/texture-packer.git
+cd texture-packer
 make release
 ```
 
@@ -52,7 +57,7 @@ brew tap reybits/homebrew-tap
 brew install reybits/texture-packer
 ```
 
-## Input files notes
+## Input format notes
 
 - **JPEG** baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib).
 - **PNG** 1/2/4/8-bit-per-channel (16 bpc not supported).
@@ -63,6 +68,10 @@ brew install reybits/texture-packer
 - **HDR** (radiance rgbE format).
 - **PIC** (Softimage PIC).
 - **PNM** (PPM and PGM binary only).
+
+## TODO
+
+- Refactor the test infrastructure and create a dedicated test image dataset that covers all possible cases (single-atlas, multi-atlas, POT/non-POT, trim, border, padding, different algorithms, edge cases with large/thin sprites).
 
 ***
 
