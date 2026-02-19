@@ -212,8 +212,9 @@ bool cImageList::packSingleAtlas(const char* desiredAtlasName, const char* outpu
             ImageList sorted = m_images;
             std::stable_sort(sorted.begin(), sorted.end(), comparators[i]);
 
+            auto packer = AtlasPacker::createPacker(m_config);
             sSize foundSize;
-            if (findMinimalAtlasSize(sorted, atlasSize, foundSize))
+            if (findMinimalAtlasSize(packer.get(), sorted, atlasSize, foundSize))
             {
                 uint64_t area = static_cast<uint64_t>(foundSize.width) * foundSize.height;
                 if (area < bestArea)
@@ -238,7 +239,7 @@ bool cImageList::packSingleAtlas(const char* desiredAtlasName, const char* outpu
     {
         auto packer = AtlasPacker::create(m_images, m_config);
 
-        if (findMinimalAtlasSize(m_images, atlasSize, atlasSize) == false)
+        if (findMinimalAtlasSize(packer.get(), m_images, atlasSize, atlasSize) == false)
         {
             return false;
         }
@@ -351,13 +352,13 @@ bool cImageList::optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize
             ImageList sorted = packedImages;
             std::stable_sort(sorted.begin(), sorted.end(), comparators[i]);
 
+            auto tryPacker = AtlasPacker::createPacker(m_config);
             sSize startSize = packedSize.isGood(optimalSize) ? optimalSize : maxSize;
             sSize foundSize;
-            if (findMinimalAtlasSize(sorted, startSize, foundSize) == false)
+            if (findMinimalAtlasSize(tryPacker.get(), sorted, startSize, foundSize) == false)
             {
                 // Growth may step over maxSize; try maxSize as fallback
-                auto fallbackPacker = AtlasPacker::createPacker(m_config);
-                if (prepareSize(fallbackPacker.get(), maxSize, sorted) == false)
+                if (prepareSize(tryPacker.get(), maxSize, sorted) == false)
                 {
                     continue;
                 }
@@ -457,14 +458,12 @@ bool cImageList::saveAtlas(AtlasPacker* packer, const char* desiredAtlasName,
 // Starts at startSize and grows by 8px (alternating width/height)
 // until every image is packed or the maximum atlas size is exceeded.
 // Returns false if no valid size was found within the limit.
-bool cImageList::findMinimalAtlasSize(ImageList& images, const sSize& startSize, sSize& outSize)
+bool cImageList::findMinimalAtlasSize(AtlasPacker* packer, ImageList& images, const sSize& startSize, sSize& outSize)
 {
-    auto packer = AtlasPacker::createPacker(m_config);
-
     sSize trySize = startSize;
     while (m_size.isGood(trySize))
     {
-        if (prepareSize(packer.get(), trySize, images))
+        if (prepareSize(packer, trySize, images))
         {
             outSize = trySize;
             return true;
