@@ -41,6 +41,20 @@ std::unique_ptr<AtlasPacker> AtlasPacker::create(ImageList& imageList, const sCo
     return std::make_unique<KDTreePacker>(config);
 }
 
+std::unique_ptr<AtlasPacker> AtlasPacker::createPacker(const sConfig& config)
+{
+    if (config.algorithm == sConfig::Algorithm::Classic)
+    {
+        return std::make_unique<SimplePacker>(config);
+    }
+    else if (config.algorithm != sConfig::Algorithm::KDTree)
+    {
+        cLog::Error("Unknown algorithm, fallback to KD-Tree.");
+    }
+
+    return std::make_unique<KDTreePacker>(config);
+}
+
 AtlasPacker::AtlasPacker(const sConfig& config)
     : m_config(config)
 {

@@ -32,6 +32,7 @@ public:
     ~KDTreePacker() override;
 
     static bool Compare(const cImage* a, const cImage* b);
+    static bool CompareAlt(const cImage* a, const cImage* b);
 
     void setSize(const sSize& size) override;
     bool add(const cImage* image) override;

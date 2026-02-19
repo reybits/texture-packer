@@ -8,6 +8,7 @@
 
 #include "ImageList.h"
 #include "Atlas/AtlasPacker.h"
+#include "Atlas/KDTreePacker.h"
 #include "Config.h"
 #include "File.h"
 #include "Image.h"
@@ -35,18 +36,11 @@ namespace
             auto base = name.substr(0, dotPos);
             auto ext = name.substr(dotPos);
 
-            // INFO: This code is for testing purposes, remove after testing
-            return fmt::format("{}_{}{}", base, index, ext);
-
             return index == 0
                 ? fmt::format("{}{}", base, ext)
                 : fmt::format("{}_{}{}", base, index, ext);
         }
 
-        // INFO: This code is for testing purposes, remove after testing
-        return fmt::format("{}_{}", name, index);
-
-        // No extension, just append
         return index == 0
             ? fmt::format("{}", name)
             : fmt::format("{}_{}", name, index);
@@ -203,44 +197,74 @@ bool cImageList::packSingleAtlas(const char* desiredAtlasName, const char* outpu
 
     auto startTime = getCurrentTime();
 
-    auto packer = AtlasPacker::create(m_images, m_config);
+    if (m_config.algorithm == sConfig::Algorithm::KDTree)
+    {
+        // Try both sort orders and pick the one that produces the smaller atlas
+        using Comparator = bool (*)(const cImage*, const cImage*);
+        Comparator comparators[] = { KDTreePacker::Compare, KDTreePacker::CompareAlt };
+
+        sSize bestSize = { 0, 0 };
+        uint64_t bestArea = UINT64_MAX;
+        int bestIdx = -1;
+
+        for (int i = 0; i < 2; i++)
+        {
+            ImageList sorted = m_images;
+            std::stable_sort(sorted.begin(), sorted.end(), comparators[i]);
+
+            sSize foundSize;
+            if (findMinimalAtlasSize(sorted, atlasSize, foundSize))
+            {
+                uint64_t area = static_cast<uint64_t>(foundSize.width) * foundSize.height;
+                if (area < bestArea)
+                {
+                    bestArea = area;
+                    bestSize = foundSize;
+                    bestIdx = i;
+                }
+            }
+        }
+
+        if (bestIdx < 0)
+        {
+            return false;
+        }
+
+        // Apply winning sort
+        std::stable_sort(m_images.begin(), m_images.end(), comparators[bestIdx]);
+        atlasSize = bestSize;
+    }
+    else
+    {
+        auto packer = AtlasPacker::create(m_images, m_config);
+
+        if (findMinimalAtlasSize(m_images, atlasSize, atlasSize) == false)
+        {
+            return false;
+        }
+    }
+
+    auto packer = AtlasPacker::createPacker(m_config);
 
     cLog::Info("Packing atlas:");
     cLog::Info(" - size: {} x {}", atlasSize.width, atlasSize.height);
 
-    bool done = false;
-    do
+    prepareSize(packer.get(), atlasSize, m_images);
+
+    cFile xmlFile;
+    writeXmlHeader(xmlFile, outputResName);
+
+    auto spritesArea = m_size.getArea();
+    packer->buildAtlas();
+
+    if (saveAtlas(packer.get(), desiredAtlasName, resPathPrefix, xmlFile,
+                  atlasSize, spritesArea, startTime)
+        == false)
     {
-        if (prepareSize(packer.get(), atlasSize, m_images) == false)
-        {
-            atlasSize = m_size.nextSize(atlasSize, 8u);
-            if (m_size.isGood(atlasSize) == false)
-            {
-                return false;
-            }
+        return false;
+    }
 
-            cLog::Info(" - size: {} x {}", atlasSize.width, atlasSize.height);
-        }
-        else
-        {
-            cFile xmlFile;
-            writeXmlHeader(xmlFile, outputResName);
-
-            auto spritesArea = m_size.getArea();
-            packer->buildAtlas();
-
-            if (saveAtlas(packer.get(), desiredAtlasName, resPathPrefix, xmlFile,
-                          atlasSize, spritesArea, startTime)
-                == false)
-            {
-                return false;
-            }
-
-            writeXmlFooter(xmlFile, outputResName);
-
-            done = true;
-        }
-    } while (done == false);
+    writeXmlFooter(xmlFile, outputResName);
 
     return true;
 }
@@ -249,15 +273,58 @@ bool cImageList::packImagesToMaxSize(ImageList& remainingImages, const sSize& ma
 {
     outPackedImages.clear();
 
-    auto packer = AtlasPacker::create(remainingImages, m_config);
-    packer->setSize(maxSize);
-
-    // Try to add as many remaining images as possible
-    for (auto img : remainingImages)
+    if (m_config.algorithm == sConfig::Algorithm::KDTree)
     {
-        if (packer->add(img))
+        using Comparator = bool (*)(const cImage*, const cImage*);
+        Comparator comparators[] = { KDTreePacker::Compare, KDTreePacker::CompareAlt };
+
+        ImageList bestPacked;
+        int bestIdx = -1;
+
+        for (int i = 0; i < 2; i++)
         {
-            outPackedImages.push_back(img);
+            ImageList sorted = remainingImages;
+            std::stable_sort(sorted.begin(), sorted.end(), comparators[i]);
+
+            auto packer = AtlasPacker::createPacker(m_config);
+            packer->setSize(maxSize);
+
+            ImageList packed;
+            for (auto img : sorted)
+            {
+                if (packer->add(img))
+                {
+                    packed.push_back(img);
+                }
+            }
+
+            if (packed.size() > bestPacked.size())
+            {
+                bestPacked = std::move(packed);
+                bestIdx = i;
+            }
+        }
+
+        if (bestIdx < 0)
+        {
+            return false;
+        }
+
+        // Apply winning sort to remainingImages so downstream gets correct order
+        std::stable_sort(remainingImages.begin(), remainingImages.end(), comparators[bestIdx]);
+        outPackedImages = std::move(bestPacked);
+    }
+    else
+    {
+        auto packer = AtlasPacker::create(remainingImages, m_config);
+        packer->setSize(maxSize);
+
+        for (auto img : remainingImages)
+        {
+            if (packer->add(img))
+            {
+                outPackedImages.push_back(img);
+            }
         }
     }
 
@@ -267,20 +334,65 @@ bool cImageList::packImagesToMaxSize(ImageList& remainingImages, const sSize& ma
 bool cImageList::optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize,
                                    sSize& outFinalSize, std::unique_ptr<AtlasPacker>& packer)
 {
-    // Calculate optimal size based on packed images
     cAtlasSize packedSize = GetAtlasSize(m_config, packedImages);
     const auto optimalSize = packedSize.calcSize();
+
+    if (m_config.algorithm == sConfig::Algorithm::KDTree)
+    {
+        using Comparator = bool (*)(const cImage*, const cImage*);
+        Comparator comparators[] = { KDTreePacker::Compare, KDTreePacker::CompareAlt };
+
+        sSize bestSize = { 0, 0 };
+        uint64_t bestArea = UINT64_MAX;
+        int bestIdx = -1;
+
+        for (int i = 0; i < 2; i++)
+        {
+            ImageList sorted = packedImages;
+            std::stable_sort(sorted.begin(), sorted.end(), comparators[i]);
+
+            sSize startSize = packedSize.isGood(optimalSize) ? optimalSize : maxSize;
+            sSize foundSize;
+            if (findMinimalAtlasSize(sorted, startSize, foundSize) == false)
+            {
+                // Growth may step over maxSize; try maxSize as fallback
+                auto fallbackPacker = AtlasPacker::createPacker(m_config);
+                if (prepareSize(fallbackPacker.get(), maxSize, sorted) == false)
+                {
+                    continue;
+                }
+                foundSize = maxSize;
+            }
+
+            uint64_t area = static_cast<uint64_t>(foundSize.width) * foundSize.height;
+            if (area < bestArea)
+            {
+                bestArea = area;
+                bestSize = foundSize;
+                bestIdx = i;
+            }
+        }
+
+        if (bestIdx < 0)
+        {
+            return false;
+        }
+
+        std::stable_sort(packedImages.begin(), packedImages.end(), comparators[bestIdx]);
+        outFinalSize = bestSize;
+
+        packer = AtlasPacker::createPacker(m_config);
+        return prepareSize(packer.get(), outFinalSize, packedImages);
+    }
 
     packer = AtlasPacker::create(packedImages, m_config);
 
     if (packedSize.isGood(optimalSize) == false)
     {
-        // Optimal size not valid, fall back to max size
         outFinalSize = maxSize;
         return prepareSize(packer.get(), maxSize, packedImages);
     }
 
-    // Try sizes from optimal upward until everything fits
     sSize trySize = optimalSize;
     while (packedSize.isGood(trySize))
     {
@@ -292,7 +404,6 @@ bool cImageList::optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize
 
         trySize = packedSize.nextSize(trySize, 8u);
 
-        // Don't exceed max size
         if (trySize.width > maxSize.width || trySize.height > maxSize.height)
         {
             outFinalSize = maxSize;
@@ -340,6 +451,29 @@ bool cImageList::saveAtlas(AtlasPacker* packer, const char* desiredAtlasName,
                (getCurrentTime() - startTime) * 0.001f);
 
     return true;
+}
+
+// Find the smallest atlas size that fits all images.
+// Starts at startSize and grows by 8px (alternating width/height)
+// until every image is packed or the maximum atlas size is exceeded.
+// Returns false if no valid size was found within the limit.
+bool cImageList::findMinimalAtlasSize(ImageList& images, const sSize& startSize, sSize& outSize)
+{
+    auto packer = AtlasPacker::createPacker(m_config);
+
+    sSize trySize = startSize;
+    while (m_size.isGood(trySize))
+    {
+        if (prepareSize(packer.get(), trySize, images))
+        {
+            outSize = trySize;
+            return true;
+        }
+
+        trySize = m_size.nextSize(trySize, 8u);
+    }
+
+    return false;
 }
 
 bool cImageList::prepareSize(AtlasPacker* packer, const sSize& atlasSize, const ImageList& images)
