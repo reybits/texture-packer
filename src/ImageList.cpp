@@ -36,21 +36,21 @@ namespace
     {
         std::string name(baseName);
 
-        // Find the last dot for extension
+        // Find the last dot for the extension
         auto dotPos = name.rfind('.');
         if (dotPos != std::string::npos)
         {
-            // Insert index before extension
+            // Insert index before the extension
             auto base = name.substr(0, dotPos);
             auto ext = name.substr(dotPos);
 
             return index == 0
-                ? fmt::format("{}{}", base, ext)
+                ? base + ext
                 : fmt::format("{}_{}{}", base, index, ext);
         }
 
         return index == 0
-            ? fmt::format("{}", name)
+            ? name
             : fmt::format("{}_{}", name, index);
     }
 
@@ -118,7 +118,7 @@ cImageList::Result cImageList::loadImage(const std::string& path, uint32_t trimC
 bool cImageList::doPacking(const char* desiredAtlasName, const char* outputResName,
                            const char* resPathPrefix, sSize& atlasSize)
 {
-    if (m_images.size() == 0)
+    if (m_images.empty())
     {
         return true;
     }
@@ -137,9 +137,10 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
     cFile xmlFile;
     writeXmlHeader(xmlFile, outputResName);
 
+    const sSize maxSize{ m_config.maxAtlasSize, m_config.maxAtlasSize };
+
     while (remainingImages.empty() == false)
     {
-        const sSize maxSize{ m_config.maxAtlasSize, m_config.maxAtlasSize };
         ImageList packedImages;
 
         if (packImagesToMaxSize(remainingImages, maxSize, packedImages) == false)
@@ -171,7 +172,7 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
             return false;
         }
 
-        // Remove packed images from remaining list
+        // Remove packed images from the remaining list
         const auto prevCount = remainingImages.size();
         for (auto img : packedImages)
         {
@@ -290,7 +291,7 @@ bool cImageList::packImagesToMaxSize(ImageList& remainingImages, const sSize& ma
             return false;
         }
 
-        // Apply winning sort to remainingImages so downstream gets correct order
+        // Apply the winning sort to remainingImages for correct downstream order
         std::stable_sort(remainingImages.begin(), remainingImages.end(), Comparators[bestIdx]);
         outPackedImages = std::move(bestPacked);
     }
@@ -336,7 +337,7 @@ bool cImageList::optimizeAtlasSize(ImageList& packedImages, const sSize& maxSize
 
         if (findMinimalAtlasSize(packer.get(), packedImages, startSize, outFinalSize) == false)
         {
-            // Growth may step over maxSize; try maxSize as fallback
+            // Growth may step over maxSize; try maxSize as a fallback
             outFinalSize = maxSize;
             if (prepareSize(packer.get(), maxSize, packedImages) == false)
             {
@@ -406,7 +407,7 @@ bool cImageList::findBestSortAndSize(ImageList& images, const sSize& startSize, 
         sSize foundSize;
         if (findMinimalAtlasSize(packer.get(), sorted, startSize, foundSize) == false)
         {
-            // Growth may step over maxSize; try maxSize as fallback
+            // Growth may step over maxSize; try maxSize as a fallback
             if (prepareSize(packer.get(), maxSize, sorted) == false)
             {
                 continue;

@@ -179,8 +179,8 @@ bool KDTreePacker::Compare(const cImage* a, const cImage* b)
 #else
 
     // Mode 6
-    // This algorithm is optimized for handling thin and long sprites,
-    // both vertical and horizontal, ensuring efficient processing
+    // This algorithm is optimized for handling long and thin sprites,
+    // both vertical and horizontal, ensuring efficient packing
     // regardless of their orientation or aspect ratio.
 
     // ./test.sh test-wz -overlay -max 3000
