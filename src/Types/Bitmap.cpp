@@ -35,7 +35,7 @@ void cBitmap::createBitmap(const sSize& size)
     m_size = size;
 
     m_manageData = true;
-    const auto pixelCount = size.width * size.height;
+    const auto pixelCount = static_cast<size_t>(size.width) * size.height;
     m_data = new Pixel[pixelCount];
 
     // Initialize all pixels to transparent black
@@ -56,7 +56,7 @@ cBitmap& cBitmap::operator=(const cBitmap& other)
     if (this != &other)
     {
         createBitmap(other.m_size);
-        std::copy(other.getData(), other.getData() + other.m_size.width * other.m_size.height, m_data);
+        std::copy(other.getData(), other.getData() + static_cast<size_t>(other.m_size.width) * other.m_size.height, m_data);
     }
 
     return *this;
