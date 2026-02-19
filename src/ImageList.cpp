@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fmt/core.h>
+#include <iterator>
 #include <limits>
 #include <vector>
 
@@ -138,7 +139,9 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
     writeXmlHeader(xmlFile, outputResName);
 
     const sSize maxSize{ m_config.maxAtlasSize, m_config.maxAtlasSize };
+    atlasSize = maxSize;
 
+    bool success = true;
     while (remainingImages.empty() == false)
     {
         ImageList packedImages;
@@ -146,7 +149,8 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
         if (packImagesToMaxSize(remainingImages, maxSize, packedImages) == false)
         {
             cLog::Error("Cannot fit any images into atlas #{}.", atlasIndex);
-            return false;
+            success = false;
+            break;
         }
 
         const auto startTime = getCurrentTime();
@@ -156,7 +160,8 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
         if (optimizeAtlasSize(packedImages, maxSize, finalSize, packer) == false)
         {
             cLog::Error("Cannot optimize size for atlas #{}.", atlasIndex);
-            return false;
+            success = false;
+            break;
         }
 
         packer->buildAtlas();
@@ -169,7 +174,8 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
                       finalSize, spritesArea, startTime)
             == false)
         {
-            return false;
+            success = false;
+            break;
         }
 
         // Remove packed images from the remaining list
@@ -183,7 +189,8 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
         if (remainingImages.size() == prevCount)
         {
             cLog::Error("Failed to pack any images into atlas #{}.", atlasIndex);
-            return false;
+            success = false;
+            break;
         }
 
         atlasSize = finalSize;
@@ -192,7 +199,7 @@ bool cImageList::packMultiAtlas(const char* desiredAtlasName, const char* output
 
     writeXmlFooter(xmlFile, outputResName);
 
-    return true;
+    return success;
 }
 
 bool cImageList::packSingleAtlas(const char* desiredAtlasName, const char* outputResName,
@@ -377,8 +384,8 @@ bool cImageList::saveAtlas(AtlasPacker* packer, const char* desiredAtlasName,
         packer->generateResFile(xmlFile, atlasPath);
     }
 
-    const auto atlasArea = atlasSize.width * atlasSize.height;
-    const auto percent = static_cast<uint32_t>(100.0f * spritesArea / atlasArea);
+    const auto atlasArea = static_cast<size_t>(atlasSize.width) * atlasSize.height;
+    const auto percent = static_cast<uint32_t>(100.0 * spritesArea / atlasArea);
 
     cLog::Info("Atlas '{}' ({} x {}, fill: {}%) was created in {:.2f} ms.",
                outputAtlasName,
