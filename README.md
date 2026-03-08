@@ -1,8 +1,6 @@
 # Texture Packer
 
-master      | development
-:---------: | :-----------:
-[![Build status: master](https://ci.appveyor.com/api/projects/status/lqfgod1e1pncowc2/branch/master?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/master "Branch: master") ![GitHub last commit (master)](https://img.shields.io/github/last-commit/reybits/texture-packer/master) | [![Build status: development](https://ci.appveyor.com/api/projects/status/lqfgod1e1pncowc2/branch/development?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/development "Branch: development") ![GitHub last commit (development)](https://img.shields.io/github/last-commit/reybits/texture-packer/development)
+[![Build status: master](https://ci.appveyor.com/api/projects/status/44jt8fun84h63wyw/branch/master?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/master "Branch: master")
 
 The Texture Packer tool efficiently combines multiple images into a single optimized texture atlas, minimizing memory usage and boosting rendering performance. By leveraging advanced packing algorithms, it maximizes space utilization and streamlines asset management for game development and UI design, enabling faster load times and simplified workflow.
 
