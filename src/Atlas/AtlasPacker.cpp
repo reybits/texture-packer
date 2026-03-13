@@ -200,6 +200,8 @@ void AtlasPacker::copyBitmap(const sRect& rc, const cImage* image, bool overlay)
 
 void AtlasPacker::buildAtlas()
 {
+    const auto atlasSize = m_atlas.getSize();
+    m_atlas.createBitmap(atlasSize);
     makeAtlas(m_config.overlay);
 
     cTrimRigthBottom trim(m_config);

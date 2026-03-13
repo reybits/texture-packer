@@ -42,6 +42,13 @@ void cBitmap::createBitmap(const sSize& size)
     std::fill(m_data, m_data + pixelCount, Pixel{ 0, 0, 0, 0 });
 }
 
+void cBitmap::setSize(const sSize& size)
+{
+    clear();
+
+    m_size = size;
+}
+
 void cBitmap::setBitmap(const sSize& size, void* data)
 {
     clear();

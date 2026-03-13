@@ -238,7 +238,7 @@ void KDTreePacker::setSize(const sSize& size)
     m_root = new cKDNode({ border, border, size.width - border, size.height - border }, m_config.padding);
 
     m_nodes.clear();
-    m_atlas.createBitmap(size);
+    m_atlas.setSize(size);
 }
 
 bool KDTreePacker::add(const cImage* image)

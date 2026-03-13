@@ -442,24 +442,52 @@ bool cImageList::findBestSortAndSize(ImageList& images, const sSize& startSize, 
 }
 
 // Find the smallest atlas size that fits all images.
-// Starts at startSize and grows by 8px (alternating width/height)
-// until every image is packed or the maximum atlas size is exceeded.
+// Precomputes candidate sizes from startSize to maxSize, then binary
+// searches for the first size that packs successfully (monotonic property:
+// if packing succeeds at size N, it succeeds at any larger size).
 // Returns false if no valid size was found within the limit.
 bool cImageList::findMinimalAtlasSize(AtlasPacker* packer, ImageList& images, const sSize& startSize, sSize& outSize)
 {
-    sSize trySize = startSize;
-    while (m_size.isGood(trySize))
+    // Build candidate sizes
+    std::vector<sSize> candidates;
+    sSize s = startSize;
+    while (m_size.isGood(s))
     {
-        if (prepareSize(packer, trySize, images))
-        {
-            outSize = trySize;
-            return true;
-        }
-
-        trySize = m_size.nextSize(trySize, 8u);
+        candidates.push_back(s);
+        s = m_size.nextSize(s, 8u);
     }
 
-    return false;
+    if (candidates.empty())
+    {
+        return false;
+    }
+
+    // Binary search: find the smallest index where packing succeeds
+    size_t lo = 0;
+    size_t hi = candidates.size();
+    bool found = false;
+
+    while (lo < hi)
+    {
+        auto mid = lo + (hi - lo) / 2;
+        if (prepareSize(packer, candidates[mid], images))
+        {
+            hi = mid;
+            found = true;
+        }
+        else
+        {
+            lo = mid + 1;
+        }
+    }
+
+    if (!found)
+    {
+        return false;
+    }
+
+    outSize = candidates[lo];
+    return true;
 }
 
 bool cImageList::prepareSize(AtlasPacker* packer, const sSize& atlasSize, const ImageList& images)

@@ -92,7 +92,7 @@ const sRect* SimplePacker::checkRegion(const sRect& region) const
 void SimplePacker::setSize(const sSize& size)
 {
     m_images.clear();
-    m_atlas.createBitmap(size);
+    m_atlas.setSize(size);
 }
 
 void SimplePacker::makeAtlas(bool overlay)
