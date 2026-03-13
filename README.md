@@ -40,7 +40,7 @@ texpacker INPUT_IMAGE [INPUT_IMAGE] <OPTIONS> --atlas=PATH
 
 ## Download and build
 
-Requires CMake 3.22+ and a C++17 compiler.
+Requires CMake 3.22+ and a C++17 compiler. Works on Linux, macOS, and BSD.
 
 ```sh
 git clone https://github.com/reybits/texture-packer.git
@@ -55,6 +55,22 @@ brew tap reybits/homebrew-tap
 brew install reybits/homebrew-tap/texture-packer
 ```
 
+## Testing
+
+Run the verification test suite to check atlas output against committed reference files:
+
+```sh
+./tests/verify.sh
+```
+
+This runs texpacker with several configurations (single atlas, multi-atlas, classic algorithm, power-of-two, border/padding) and compares the resulting atlas images and XML metadata byte-for-byte against reference output.
+
+To regenerate reference files after an intentional change in packing behavior:
+
+```sh
+./tests/verify.sh --update
+```
+
 ## Input format notes
 
 - **JPEG** baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib).
@@ -66,10 +82,6 @@ brew install reybits/homebrew-tap/texture-packer
 - **HDR** (radiance rgbE format).
 - **PIC** (Softimage PIC).
 - **PNM** (PPM and PGM binary only).
-
-## TODO
-
-- Refactor the test infrastructure and create a dedicated test image dataset that covers all possible cases (single-atlas, multi-atlas, POT/non-POT, trim, border, padding, different algorithms, edge cases with large/thin sprites).
 
 ***
 
