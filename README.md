@@ -2,6 +2,8 @@
 
 [![Build status: master](https://ci.appveyor.com/api/projects/status/44jt8fun84h63wyw/branch/master?svg=true)](https://ci.appveyor.com/project/reybits/texture-packer/branch/master "Branch: master")
 
+![Texture Packer — combines multiple sprites into an optimized atlas](res/banner.png)
+
 The Texture Packer tool efficiently combines multiple images into a single optimized texture atlas, minimizing memory usage and boosting rendering performance. By leveraging advanced packing algorithms, it maximizes space utilization and streamlines asset management for game development and UI design, enabling faster load times and simplified workflow.
 
 ## Key features
