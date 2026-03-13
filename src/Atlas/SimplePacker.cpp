@@ -63,7 +63,7 @@ bool SimplePacker::add(const cImage* image)
                 return true;
             }
 
-            x += rc->width() + padding;
+            x += rc->width() + padding * 2;
         }
         y++;
     }
@@ -77,10 +77,10 @@ const sRect* SimplePacker::checkRegion(const sRect& region) const
     for (const auto& img : m_images)
     {
         const auto& rc = img.rc;
-        if (region.left < rc.right + padding
-            && region.right + padding > rc.left
-            && region.top < rc.bottom + padding
-            && region.bottom + padding > rc.top)
+        if (region.left < rc.right + padding * 2
+            && region.right + padding * 2 > rc.left
+            && region.top < rc.bottom + padding * 2
+            && region.bottom + padding * 2 > rc.top)
         {
             return &rc;
         }
