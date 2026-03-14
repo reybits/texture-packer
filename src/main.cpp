@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     if (argc < 3)
     {
         showHelp(argv[0], config);
-        return -1;
+        return 0;
     }
 
     const char* outputAtlasName = nullptr;
